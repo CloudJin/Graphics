@@ -182,12 +182,13 @@ namespace UnityEngine.Rendering.Universal.Internal
 
             int beginOffset = (int)(MainDirVxShadowMap.bitset & 0x3FFFFFFF);
             int voxelZBias = vxShadowMapsContainer.ZBias;
+            int distance = vxShadowMapsContainer.DistanceThreshold;
             float voxelUpBias = 1 * (MainDirVxShadowMap.VolumeScale / MainDirVxShadowMap.VoxelResolutionInt);
             float softShadowsProp = softShadows ? 1.0f : 0.0f;
 
             var shadowParams = new Vector4(light.shadowStrength, softShadowsProp, 0.0f, 0.0f);
             var screenSize = new Vector4(screenSizeX, screenSizeY, invScreenSizeX, invScreenSizeY);
-            var parameters = new int[] { beginOffset, voxelZBias, 0, 0, };
+            var parameters = new int[] { beginOffset, voxelZBias, distance, 0, };
 
             var vxShadowMapsBuffer = VxShadowMapsManager.Instance.VxShadowMapsBuffer;
 
