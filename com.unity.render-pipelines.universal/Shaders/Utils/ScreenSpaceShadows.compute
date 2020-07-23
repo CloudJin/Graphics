@@ -53,6 +53,7 @@ CBUFFER_END
 #define _BeginOffset _VxShadowMapParameters.x
 #define _VoxelZBias  _VxShadowMapParameters.y
 #define _VxsmOffset  _VxShadowMapParameters.x + OFFSET_DIR
+#define _VxsmDistanceThreshold _VxShadowMapParameters.z
 
 RW_TEXTURE2D(float, _ScreenSpaceShadowOutput);
 
@@ -656,8 +657,22 @@ void CSKernel(uint3 dispatchThreadId : SV_DispatchThreadID)
 
     float2 positionNDC = positionSS * _ScreenSize.zw + (0.5 * _ScreenSize.zw);
     float3 positionWS = ComputeWorldSpacePosition(positionNDC, deviceDepth, UNITY_MATRIX_I_VP);
+    float3 cameraPos = _WorldSpaceCameraPos;
+
 
     float attenuation = 1.0;
+
+    if (distance(cameraPos, positionWS) < _VxsmDistanceThreshold)
+    {
+        float4 shadowMapCoords = TransformWorldToShadowCoord(positionWS);
+        ShadowSamplingData shadowSamplingData = GetMainLightShadowSamplingData();
+        half4 shadowParams = GetMainLightShadowParams();
+
+        attenuation = SampleShadowmap(TEXTURE2D_ARGS(_MainLightShadowmapTexture, sampler_MainLightShadowmapTexture), shadowMapCoords, shadowSamplingData, shadowParams, false);
+
+        _ScreenSpaceShadowOutput[positionSS] = attenuation;
+        return;
+    }
 
 #if WITH_DYNAMIC_SHADOWS
     float4 shadowMapCoords = TransformWorldToShadowCoord(positionWS);
