@@ -648,8 +648,7 @@ namespace UnityEngine.Rendering.Universal
             //Disable shadow map drawing beyond vx distance threshold
             if (VxShadowMapsManager.Instance.Container!=null && VxShadowMapsManager.Instance.Container.isActiveAndEnabled)
             {
-                cameraData.maxShadowDistance = VxShadowMapsManager.Instance.Container.DistanceThreshold;
-                Debug.Log(cameraData.maxShadowDistance);
+                cameraData.maxShadowDistance = VxShadowMapsManager.Instance.Container.DistanceThreshold * 4;
             }
             cameraData.maxShadowDistance = (anyShadowsEnabled && cameraData.maxShadowDistance >= camera.nearClipPlane) ?
                 cameraData.maxShadowDistance : 0.0f;
