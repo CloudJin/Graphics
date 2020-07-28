@@ -664,14 +664,20 @@ void CSKernel(uint3 dispatchThreadId : SV_DispatchThreadID)
 
     if (distance(cameraPos, positionWS) < _VxsmDistanceThreshold)
     {
+        //Fetch shadow coordinates for cascade.
         float4 shadowMapCoords = TransformWorldToShadowCoord(positionWS);
+
+        // Screenspace shadowmap is only used for directional lights which use orthogonal projection.
         ShadowSamplingData shadowSamplingData = GetMainLightShadowSamplingData();
         half4 shadowParams = GetMainLightShadowParams();
-
         attenuation = SampleShadowmap(TEXTURE2D_ARGS(_MainLightShadowmapTexture, sampler_MainLightShadowmapTexture), shadowMapCoords, shadowSamplingData, shadowParams, false);
-
-        _ScreenSpaceShadowOutput[positionSS] = attenuation;
-        return;
+        //_ScreenSpaceShadowOutput[positionSS] = attenuation;
+        //return;
+        if (attenuation < 1.0)
+        {
+            _ScreenSpaceShadowOutput[positionSS] = attenuation;
+            return;
+        }
     }
 
 #if WITH_DYNAMIC_SHADOWS
