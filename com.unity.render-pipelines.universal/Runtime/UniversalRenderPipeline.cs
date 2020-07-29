@@ -645,14 +645,13 @@ namespace UnityEngine.Rendering.Universal
 
             bool anyShadowsEnabled = settings.supportsMainLightShadows || settings.supportsAdditionalLightShadows;
             cameraData.maxShadowDistance = Mathf.Min(settings.shadowDistance, camera.farClipPlane);
-            //Disable shadow map drawing beyond vx distance threshold
-            if (VxShadowMapsManager.Instance.Container!=null && VxShadowMapsManager.Instance.Container.isActiveAndEnabled)
-            {
-                cameraData.maxShadowDistance = VxShadowMapsManager.Instance.Container.DistanceThreshold * 4;
-            }
             cameraData.maxShadowDistance = (anyShadowsEnabled && cameraData.maxShadowDistance >= camera.nearClipPlane) ?
                 cameraData.maxShadowDistance : 0.0f;
-
+            //set distance threshold for vxsm
+            if (VxShadowMapsManager.Instance.Container != null && VxShadowMapsManager.Instance.Container.isActiveAndEnabled)
+            {
+                VxShadowMapsManager.Instance.Container.DistanceThreshold = (int)(cameraData.maxShadowDistance / 4.0f);
+            }
             cameraData.viewMatrix = camera.worldToCameraMatrix;
 
             // Overlay cameras inherit viewport from base.
