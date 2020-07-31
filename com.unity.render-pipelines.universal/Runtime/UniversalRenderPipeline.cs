@@ -649,6 +649,11 @@ namespace UnityEngine.Rendering.Universal
                 cameraData.maxShadowDistance : 0.0f;
             cameraData.viewMatrix = camera.worldToCameraMatrix;
 
+            if (VxShadowMapsManager.Instance.Container!=null && VxShadowMapsManager.Instance.Container.isActiveAndEnabled)
+            {
+                VxShadowMapsManager.Instance.Container.DistanceThreshold = (int)cameraData.maxShadowDistance;
+            }
+
             // Overlay cameras inherit viewport from base.
             // If the viewport is different between them we might need to patch the projection
             // matrix to prevent squishing when rendering objects in overlay cameras.
