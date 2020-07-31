@@ -636,6 +636,7 @@ float PCF9x9VxShadowMap(uint vxsmOffset, uint2 adjOffset, uint3 posQ, uint4 inne
 [numthreads(TILE_SIZE, TILE_SIZE, 1)]
 void CSKernel(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
+    
     // todo : need to consider XR slot
 
     uint2 positionSS = dispatchThreadId.xy;
@@ -649,7 +650,6 @@ void CSKernel(uint3 dispatchThreadId : SV_DispatchThreadID)
         _ScreenSpaceShadowOutput[positionSS] = 1.0;
         return;
     }
-
 #if SHADER_API_GLCORE
     // reverse depth on OpenGL
     deviceDepth = deviceDepth * 2.0 - 1.0;
@@ -662,7 +662,6 @@ void CSKernel(uint3 dispatchThreadId : SV_DispatchThreadID)
 
     float attenuation = 1.0;
   
-
     if (distance(cameraPos, positionWS) < _VxsmDistanceThreshold)
     {
         //Fetch shadow coordinates for cascade.
@@ -671,11 +670,13 @@ void CSKernel(uint3 dispatchThreadId : SV_DispatchThreadID)
         ShadowSamplingData shadowSamplingData = GetMainLightShadowSamplingData();
         half4 shadowParams = GetMainLightShadowParams();
         attenuation = SampleShadowmap(TEXTURE2D_ARGS(_MainLightShadowmapTexture, sampler_MainLightShadowmapTexture), shadowMapCoords, shadowSamplingData, shadowParams, false);
-        _ScreenSpaceShadowOutput[positionSS] = attenuation;
-        return;
+        if (attenuation == 0.0)
+        {
+            _ScreenSpaceShadowOutput[positionSS] = attenuation;
+            return;
+        }
     }
-
-#if WITH_DYNAMIC_SHADOWS
+/*#if WITH_DYNAMIC_SHADOWS
     float4 shadowMapCoords = TransformWorldToShadowCoord(positionWS);
     ShadowSamplingData shadowSamplingData = GetMainLightShadowSamplingData();
     half4 shadowParams = GetMainLightShadowParams();
@@ -687,7 +688,8 @@ void CSKernel(uint3 dispatchThreadId : SV_DispatchThreadID)
         _ScreenSpaceShadowOutput[positionSS] = attenuation;
         return;
     }
-#endif
+#endif*/
+
 
     float volumeScale = GetVolumeScale(_BeginOffset);
     uint dagScale = GetDagScale(_BeginOffset);
@@ -705,6 +707,8 @@ void CSKernel(uint3 dispatchThreadId : SV_DispatchThreadID)
     posP.z -= _VoxelZBias;
     uint3 posQ = (uint3)posP;
 
+
+
 #if NEAREST_SAMPLE
     uint2 result;
     TraverseVxShadowMapPosQ(_VxsmOffset, dagScale, posQ, result);
@@ -720,10 +724,12 @@ void CSKernel(uint3 dispatchThreadId : SV_DispatchThreadID)
     attenuation = min(attenuation, attenuationVxsm);
 #elif HARD_SHADOWS
 
+
 #if 0 // Author's algorithm
     uint4 results[2];
     TraverseVxShadowMapPosQ2x2Stacktraced(_VxsmOffset, dagScale, uint2(0, 1), posQ, results);
 #else
+
     uint4 results[2];
     TraverseVxShadowMapPosQ2x2Simultaneously(_VxsmOffset, dagScale, uint2(0, 1), posQ, results);
 #endif
@@ -761,6 +767,8 @@ void CSKernel(uint3 dispatchThreadId : SV_DispatchThreadID)
     float attenuationVxsm = BilinearSampleVxShadowMap(_VxsmOffset, posQ, results, lerpWeight.xy);
     attenuation = min(attenuation, attenuationVxsm);
 
+
+
 #else
 
 #if PCF9x9
@@ -774,6 +782,10 @@ void CSKernel(uint3 dispatchThreadId : SV_DispatchThreadID)
 #endif
 
     uint4 results[2];
+
+
+
+
 
     TraverseVxShadowMapPosQ2x2Simultaneously(_VxsmOffset, dagScale, adjOffset, posQ, results);
 
