@@ -651,7 +651,7 @@ namespace UnityEngine.Rendering.Universal
 
             if (VxShadowMapsManager.Instance.Container!=null && VxShadowMapsManager.Instance.Container.isActiveAndEnabled)
             {
-                VxShadowMapsManager.Instance.Container.DistanceThreshold = (int)cameraData.maxShadowDistance;
+                VxShadowMapsManager.Instance.Container.DistanceThreshold = (int)(cameraData.maxShadowDistance*0.9);
             }
 
             // Overlay cameras inherit viewport from base.

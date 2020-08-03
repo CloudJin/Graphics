@@ -1,6 +1,6 @@
-#pragma kernel BlendCascadeShadowsNearest  CSKernel=BlendCascadeShadowsNearest  WITH_DYNAMIC_SHADOWS  NEAREST_SAMPLE
-#pragma kernel BlendCascadeShadowsHard     CSKernel=BlendCascadeShadowsHard     WITH_DYNAMIC_SHADOWS  HARD_SHADOWS
-#pragma kernel BlendCascadeShadowsSoft     CSKernel=BlendCascadeShadowsSoft     WITH_DYNAMIC_SHADOWS  SOFT_SHADOWS
+#pragma kernel BlendCascadeShadowsNearest  CSKernel=BlendCascadeShadowsNearest  WITH_DYNAMIC_SHADOWS  NEAREST_SAMPLE    _MAIN_LIGHT_SHADOWS_CASCADE
+#pragma kernel BlendCascadeShadowsHard     CSKernel=BlendCascadeShadowsHard     WITH_DYNAMIC_SHADOWS  HARD_SHADOWS  _MAIN_LIGHT_SHADOWS_CASCADE
+#pragma kernel BlendCascadeShadowsSoft     CSKernel=BlendCascadeShadowsSoft     WITH_DYNAMIC_SHADOWS  SOFT_SHADOWS  _MAIN_LIGHT_SHADOWS_CASCADE
 
 #pragma kernel BlendDynamicShadowsNearest  CSKernel=BlendDynamicShadowsNearest  WITH_DYNAMIC_SHADOWS NEAREST_SAMPLE
 #pragma kernel BlendDynamicShadowsHard     CSKernel=BlendDynamicShadowsHard     WITH_DYNAMIC_SHADOWS HARD_SHADOWS
@@ -636,7 +636,6 @@ float PCF9x9VxShadowMap(uint vxsmOffset, uint2 adjOffset, uint3 posQ, uint4 inne
 [numthreads(TILE_SIZE, TILE_SIZE, 1)]
 void CSKernel(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-    
     // todo : need to consider XR slot
 
     uint2 positionSS = dispatchThreadId.xy;
@@ -670,11 +669,13 @@ void CSKernel(uint3 dispatchThreadId : SV_DispatchThreadID)
         ShadowSamplingData shadowSamplingData = GetMainLightShadowSamplingData();
         half4 shadowParams = GetMainLightShadowParams();
         attenuation = SampleShadowmap(TEXTURE2D_ARGS(_MainLightShadowmapTexture, sampler_MainLightShadowmapTexture), shadowMapCoords, shadowSamplingData, shadowParams, false);
-        if (attenuation == 0.0)
+        _ScreenSpaceShadowOutput[positionSS] = attenuation;
+        return;
+        /*if (attenuation < 1.0)
         {
             _ScreenSpaceShadowOutput[positionSS] = attenuation;
             return;
-        }
+        }*/
     }
 /*#if WITH_DYNAMIC_SHADOWS
     float4 shadowMapCoords = TransformWorldToShadowCoord(positionWS);
