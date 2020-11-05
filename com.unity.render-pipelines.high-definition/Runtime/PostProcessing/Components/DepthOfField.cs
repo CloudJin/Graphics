@@ -51,6 +51,7 @@ namespace UnityEngine.Rendering.HighDefinition
     /// A volume component that holds settings for the Depth Of Field effect.
     /// </summary>
     [Serializable, VolumeComponentMenu("Post-processing/Depth Of Field")]
+    [HelpURL(Documentation.baseURL + Documentation.version + Documentation.subURL + "Post-Processing-Depth-of-Field" + Documentation.endURL)]
     public sealed class DepthOfField : VolumeComponentWithQuality, IPostProcessComponent
     {
         /// <summary>
@@ -204,6 +205,9 @@ namespace UnityEngine.Rendering.HighDefinition
             set { m_HighQualityFiltering.value = value; }
         }
 
+        /// <summary>
+        /// When enabled, HDRP uses a more accurate but slower physically based method to compute the depth of field effect.
+        /// </summary>
         public bool physicallyBased
         {
             get
